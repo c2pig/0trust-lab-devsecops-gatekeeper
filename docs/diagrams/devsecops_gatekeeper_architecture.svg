@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" width="960" height="440" font-family="Inter, system-ui, -apple-system, sans-serif">
+  <rect width="960" height="440" fill="#f8fafc" rx="12" />
+  <text x="32" y="40" font-size="18" font-weight="800" fill="#0f172a">Lab 4: DevSecOps &amp; Supply-Chain Gatekeeper (/devsecops-gatekeeper)</text>
+  <text x="32" y="62" font-size="12" fill="#475569">2-Seat Archetype C + POE · Syft CycloneDX SBOM · Gitleaks · Checkov · OPA/Rego Fail-Closed Gate · Keyless Cosign OIDC</text>
+
+  <!-- Seats -->
+  <rect x="32" y="88" width="210" height="90" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+  <text x="48" y="114" font-size="13" font-weight="700" fill="#1e3a8a">Seat 1: Platform Dev</text>
+  <text x="48" y="134" font-size="11.5" fill="#1e40af">Jordan Lee · PR Author</text>
+  <text x="48" y="156" font-size="11" fill="#3b82f6">PR #418–422 · CI Runner</text>
+
+  <rect x="32" y="198" width="210" height="90" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+  <text x="48" y="224" font-size="13" font-weight="700" fill="#065f46">Seat 2: AppSec Gatekeeper</text>
+  <text x="48" y="244" font-size="11.5" fill="#047857">Sora Takahashi · Policy Owner</text>
+  <text x="48" y="266" font-size="11" fill="#059669">POE Unlock + OPA/Rego Patcher</text>
+
+  <!-- Scanners & POE -->
+  <rect x="290" y="88" width="290" height="200" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+  <text x="310" y="114" font-size="13" font-weight="700" fill="#0f172a">PR Security Gate Scanners</text>
+  <rect x="310" y="128" width="250" height="32" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+  <text x="322" y="148" font-size="11.5" font-weight="600" fill="#991b1b">4A: Syft SBOM (Typosquatting)</text>
+  <rect x="310" y="168" width="250" height="32" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+  <text x="322" y="188" font-size="11.5" font-weight="600" fill="#991b1b">4B: Gitleaks (Hardcoded Secrets)</text>
+  <rect x="310" y="208" width="250" height="32" rx="6" fill="#fffbeb" stroke="#fcd34d" />
+  <text x="322" y="228" font-size="11.5" font-weight="600" fill="#92400e">4C: GitHub Actions (Unpinned SHA)</text>
+  <rect x="310" y="248" width="250" height="32" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+  <text x="322" y="268" font-size="11.5" font-weight="600" fill="#991b1b">4D: Checkov IaC (Public ACL)</text>
+
+  <!-- Edge API & OPA Gate -->
+  <rect x="630" y="88" width="298" height="200" rx="10" fill="#ffffff" stroke="#0f172a" stroke-width="1.5" />
+  <text x="650" y="114" font-size="13" font-weight="700" fill="#0f172a">Edge API &amp; Fail-Closed OPA Gate</text>
+  <text x="650" y="136" font-size="11" font-family="monospace" fill="#334155">POST /api/devsecops-gatekeeper/evaluate-pr</text>
+  <rect x="650" y="150" width="258" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1" />
+  <text x="662" y="170" font-size="11" font-weight="600" fill="#0f172a">4/4 OPA/Rego Clauses + CLEAN_PR?</text>
+  <text x="662" y="188" font-size="11" fill="#dc2626">False -&gt; 403 DENY (Fail-Closed)</text>
+  <text x="662" y="202" font-size="11" fill="#059669">True  -&gt; 200 ALLOW + Cosign OIDC</text>
+  <rect x="650" y="220" width="258" height="52" rx="6" fill="#eef2ff" stroke="#818cf8" />
+  <text x="662" y="240" font-size="11.5" font-weight="700" fill="#3730a3">STATE_KV (1h TTL)</text>
+  <text x="662" y="258" font-size="11" font-family="monospace" fill="#4338ca">lab4:devsecops:&lt;sessionId&gt;</text>
+
+  <!-- Bottom Telemetry & Fallback -->
+  <rect x="32" y="314" width="896" height="94" rx="10" fill="#0f172a" />
+  <text x="52" y="344" font-size="13" font-weight="700" fill="#f8fafc">X-Ray Telemetry Drawer &amp; $0/mo Deterministic Fallback</text>
+  <text x="52" y="366" font-size="11.5" fill="#cbd5e1">• W3C traceparent spans across _middleware.ts (Edge) and devsecopsEngine.ts (browser-webcrypto-fallback in vite dev)</text>
+  <text x="52" y="386" font-size="11.5" fill="#94a3b8">• Live Decoded Proof: Syft CycloneDX SBOM · Gitleaks/Checkov JSON · Sigstore Cosign OIDC Bundle · OPA/Rego Trace</text>
+
+  <!-- Arrows -->
+  <line x1="242" y1="133" x2="290" y2="133" stroke="#64748b" stroke-width="2" />
+  <line x1="242" y1="243" x2="290" y2="243" stroke="#64748b" stroke-width="2" />
+  <line x1="580" y1="188" x2="630" y2="188" stroke="#64748b" stroke-width="2" />
+</svg>
