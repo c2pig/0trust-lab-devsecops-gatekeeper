@@ -1,0 +1,40 @@
+{
+  "id": "devsecops-gatekeeper",
+  "title": "DevSecOps & Supply-Chain Gatekeeper",
+  "domainLabel": "DevSecOps & Supply Chain",
+  "description": "Diagnose poisoned pull requests across Syft SBOM, Gitleaks, Checkov, and unpinned GitHub Actions, then patch OPA/Rego admission policies and achieve keyless Cosign OIDC attestation.",
+  "repo": "c2pig/0trust-lab-devsecops-gatekeeper",
+  "routePath": "/devsecops-gatekeeper",
+  "standaloneUrl": "https://lab.0trust.dev/devsecops-gatekeeper",
+  "localDevPort": 5179,
+  "archetype": "C",
+  "seats": [
+    {
+      "id": "developer",
+      "persona": "Jordan Lee",
+      "roleLabel": "Platform Dev · GitHub PR Author",
+      "appLabel": "Pull Request & CI Runner"
+    },
+    {
+      "id": "appsec-gate",
+      "persona": "Sora Takahashi",
+      "roleLabel": "AppSec · Policy-as-Code Gatekeeper",
+      "appLabel": "Syft/Cosign & OPA/Rego Workbench"
+    }
+  ],
+  "apiEndpoints": [
+    "/api/devsecops-gatekeeper/evaluate-pr"
+  ],
+  "kvPrefixes": [
+    "lab4:devsecops:"
+  ],
+  "infraDependencies": [
+    "managed-infrastructure/modules/cloudflare-pages-lab",
+    "Sigstore Cosign OIDC (Simulated)",
+    "OPA/Rego Policy Gate"
+  ],
+  "diagrams": {
+    "localArchitectureMd": "docs/ARCHITECTURE.md",
+    "zoominSvg": "docs/diagrams/devsecops_gatekeeper_architecture.svg"
+  }
+}
