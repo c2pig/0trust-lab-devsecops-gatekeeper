@@ -5,6 +5,7 @@
   "description": "Diagnose poisoned pull requests across Syft SBOM, Gitleaks, Checkov, and unpinned GitHub Actions, then patch OPA/Rego admission policies and achieve keyless Cosign OIDC attestation.",
   "repo": "c2pig/0trust-lab-devsecops-gatekeeper",
   "routePath": "/devsecops-gatekeeper",
+  "apiPrefix": "/api/devsecops-gatekeeper",
   "standaloneUrl": "https://lab.0trust.dev/devsecops-gatekeeper",
   "localDevPort": 5179,
   "archetype": "C",
