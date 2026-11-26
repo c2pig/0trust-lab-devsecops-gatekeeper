@@ -16,14 +16,12 @@ flowchart LR
 ```
 
 ## Key Boundaries & Components
-1. **2-Seat Role Switcher (`developer` ↔ `appsec-gate`)**:
-   - **Platform Dev (`Jordan Lee`)**: Authors Pull Requests (`PR #418`–`PR #422`), triggers CI scans, remediates findings, and runs `Deploy PR`.
-   - **AppSec Gatekeeper (`Sora Takahashi`)**: Inspects smoking-gun scanner findings in POE mode to unlock the OPA/Rego policy patcher, enforces all 4 admission clauses (`require_pinned_sha`, `block_secrets`, `require_cosign_oidc`, `block_public_acl`), and verifies keyless Cosign OIDC attestations.
-2. **4-Phase Cognitive Arc + POE Gate**:
-   - **Discovery**: Interactive 5-stage PR-to-Production pipeline map.
-   - **Understanding (POE)**: Predict-Observe-Explain across 4 poisoned PR presets (`TYPOSQUAT_DEP`, `LEAKED_SECRET`, `UNPINNED_ACTION`, `PUBLIC_IAC_ACL`). Clicking the smoking-gun diff line unlocks Phase 3.
-   - **Practice**: Live OPA/Rego policy patcher + PR remediation & `Deploy PR` runner.
-   - **Reflection**: Security vs. velocity scorecard, trap checklist, and exportable JSON attestation bundle.
+1. **AppShell Header, `driver.js` Orientation & Dropdown Role Switcher (`developer` ↔ `appsec-gate`)**:
+   - Compact sticky `56px` AppShell header with `All Labs`, lab title, live status pill, dropdown `RoleSwitcherBar` (with notification dots for pending policy rules or PR check results), `Lab Tour` (`driver.js` orientation overlay), and `Reset`.
+   - **Developer (`Jordan Lee`)**: Git Pull Request & CI Checks view (`PR #418`–`PR #422`), live changed-file diff preview, and `Run CI Checks` execution against the fail-closed admission gate.
+   - **AppSec (`Sora Takahashi`)**: Policy Gate & Release Approval console with an interactive OPA/Rego admission clause table (`require_pinned_sha`, `block_secrets`, `require_cosign_oidc`, `block_public_acl`), Release Approval queue table, live `policy/admission.rego` preview, and exportable JSON attestation bundle.
+2. **Strict Role Isolation & X-Ray Telemetry Drawer**:
+   - Users switch personas exclusively through the AppShell dropdown without cross-role auto-switch shortcuts or tutorial trap banners; the sticky-bottom `XRayTelemetryDrawer` exposes live HTTP spans, CycloneDX SBOMs, scanner findings, OPA traces, and Sigstore Cosign OIDC attestations.
 3. **Cloud Run Backend Adapter (`server/`) & Handler (`functions/api/devsecops-gatekeeper/evaluate-pr.ts`)**:
    - **Shared Runtime & HTTP Server (`server/runtime.ts`, `server/app.ts`, `server/index.ts`)**: `server/app.ts` is a thin wrapper calling canonical synced `createBaseLabApp` from `server/runtime.ts` (re-exporting `verifyRouterSecret`) inside the canonical multi-stage `node:22-alpine` `Dockerfile` (`COPY src ./src` in Stage 1 builder; Stage 2 runner copies `/app/dist-server`, non-root `USER node`, port `8080`) wrapping `functions/api/_middleware.ts` and `POST /api/devsecops-gatekeeper/evaluate-pr`.
    - **`GET /healthz`**: Returns `200 { ok: true, lab: "devsecops-gatekeeper" }` (exempt from `X-Lab-Router-Secret` for Cloud Run startup/liveness probes; touches no secrets or Firestore).
