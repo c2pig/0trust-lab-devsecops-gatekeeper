@@ -39,6 +39,7 @@ interface DevSecOpsKvRecord {
 
 const MAX_BODY_BYTES = 64 * 1024;
 const KV_TTL_SECONDS = 3600;
+const MAX_EPHEMERAL_ENTRIES = 256;
 const VALID_PRESETS = new Set<PrPresetId>([
   'TYPOSQUAT_DEP',
   'LEAKED_SECRET',
@@ -47,7 +48,30 @@ const VALID_PRESETS = new Set<PrPresetId>([
   'CLEAN_PR'
 ]);
 
-const ephemeralDevSecOpsStore = new Map<string, DevSecOpsKvRecord>();
+const ephemeralDevSecOpsStore = new Map<string, { value: DevSecOpsKvRecord; expiresAt: number }>();
+
+function getEphemeralDevSecOps(key: string): DevSecOpsKvRecord | null {
+  const entry = ephemeralDevSecOpsStore.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    ephemeralDevSecOpsStore.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setEphemeralDevSecOps(key: string, value: DevSecOpsKvRecord): void {
+  const now = Date.now();
+  for (const [k, v] of ephemeralDevSecOpsStore) {
+    if (v.expiresAt <= now) ephemeralDevSecOpsStore.delete(k);
+  }
+  if (!ephemeralDevSecOpsStore.has(key) && ephemeralDevSecOpsStore.size >= MAX_EPHEMERAL_ENTRIES) {
+    const oldestKey = ephemeralDevSecOpsStore.keys().next().value;
+    if (oldestKey !== undefined) ephemeralDevSecOpsStore.delete(oldestKey);
+  }
+  ephemeralDevSecOpsStore.delete(key);
+  ephemeralDevSecOpsStore.set(key, { value, expiresAt: now + KV_TTL_SECONDS * 1000 });
+}
 
 function sanitizeSessionId(raw: string | null | undefined): string {
   if (!raw || typeof raw !== 'string') return 'demo-visitor';
@@ -259,7 +283,7 @@ export async function onRequestPost(context: {
       prevCount = 0;
     }
   } else {
-    prevCount = ephemeralDevSecOpsStore.get(kvKey)?.evaluations_count ?? 0;
+    prevCount = getEphemeralDevSecOps(kvKey)?.evaluations_count ?? 0;
   }
 
   const record: DevSecOpsKvRecord = {
@@ -276,7 +300,7 @@ export async function onRequestPost(context: {
       expirationTtl: KV_TTL_SECONDS
     });
   } else {
-    ephemeralDevSecOpsStore.set(kvKey, record);
+    setEphemeralDevSecOps(kvKey, record);
   }
 
   return jsonResponse(
