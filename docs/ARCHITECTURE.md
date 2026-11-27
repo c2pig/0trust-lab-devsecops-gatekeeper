@@ -34,6 +34,10 @@ flowchart LR
    - **Cloudflare Pages (Static SPA)**: `managed-infrastructure//modules/cloudflare-pages-lab` (`enable_custom_domain = false`). `deploy.yml` `deploy-pages` strips `functions/` and deploys `dist/` only.
    - **GCP Cloud Run API**: `managed-infrastructure//modules/cloud-run-lab` (`min_instance_count = 0`, `$0` idle cost, dedicated least-privilege runtime SA with `roles/datastore.user` and per-secret `roles/secretmanager.secretAccessor`). `deploy.yml` `deploy-cloudrun` authenticates via GitHub Actions WIF OIDC, builds/pushes to Artifact Registry (`0trust-labs/devsecops-gatekeeper:${GITHUB_SHA}`), and deploys to Cloud Run.
    - **Terraform Remote GCS State (`infra/terraform/backend.tf`) & Shell Parity**: Declares remote `backend "gcs"` (`bucket = "0trust-dev-tfstate"`, `prefix = "labs/devsecops-gatekeeper"`) with `.terraform/` and `*.tfstate*` gitignored. Operators migrating local state should provision the GCS bucket once with Uniform Bucket-Level Access, versioning enabled, and `public_access_prevention = "enforced"`, then run `terraform init -migrate-state`. Shared shell, middleware, telemetry, runtime (`server/{kvAdapter,origin,runtime,index}.ts`), and `Dockerfile` are kept in parity with `c2pig/0trust.dev` via `scripts/sync-lab-shell.mjs`.
+   - **Hardened Middleware, Telemetry & Runtime**:
+     - `functions/api/_telemetry.ts`: Redacts sensitive auth headers/tokens in telemetry payloads (`***REDACTED***`).
+     - `functions/api/_middleware.ts`: Handles null-body responses safely, emits error telemetry on unhandled failures, and strips internal/sensitive headers.
+     - `server/` (`runtime.ts`, `origin.ts`, `kvAdapter.ts`, `index.ts`): Enforces fail-closed `LAB_ROUTER_SECRET` with SHA-256 `timingSafeEqual` verification, bounded OTLP flush timeouts, dev-only localhost origin allowance, `closeIdleConnections()` on shutdown, and `expireAt?.toMillis` defensive guard in `FirestoreKvAdapter`.
 
 ---
 
