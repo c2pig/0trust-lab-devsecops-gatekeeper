@@ -52,3 +52,5 @@ flowchart LR
   - **Layer 1 (`tests/server.test.ts`)**: Cloud Run adapter security & API invariants (`X-Lab-Router-Secret`, `/healthz`, TTL expiry, `X-Forwarded-Host`, JWT/secret redaction, `413 PAYLOAD_TOO_LARGE`, `400 INVALID_JSON` / `INVALID_PR_PRESET`).
   - **Layer 2 (`tests/api.test.ts`)**: Edge function handler (`functions/api/devsecops-gatekeeper/evaluate-pr.ts`) tested with `MemoryKvAdapter` for 4-clause OPA/Rego truth table, edge fallback parity with `evaluatePrLocally`, fail-closed `413`/`400` validation, and per-session KV isolation.
   - **Layer 3 (`tests/engine.test.ts`, `tests/selectors.test.ts`)**: Pure engine (`src/engine/devsecopsEngine.ts`) and DOM-free UI selectors (`src/engine/devsecopsSelectors.ts`) tested with `tsx --test` (`node:test`).
+
+- **Lease-Boundary Lifecycle (`LabLeaseGuard`)**: Synced `src/components/LabLeaseGuard.tsx` with `onLeaseEnded?: () => void` callback invoked on **End Lab** (`handleRelease()`) and lease expiry transitions.
