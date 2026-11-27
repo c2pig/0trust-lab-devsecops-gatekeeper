@@ -19,6 +19,12 @@ import {
   exportAttestationReport,
   renderOpaRegoPolicy
 } from '../engine/devsecopsEngine';
+import {
+  areAllClausesHardened,
+  buildDevSecOpsSeats,
+  countEnabledClauses,
+  getGlobalStatusLabel
+} from '../engine/devsecopsSelectors';
 import { RoleSeatItem, RoleSwitcherBar } from '../components/RoleSwitcherBar';
 import { XRayDecodedProofSection, XRayTelemetryDrawer } from '../components/XRayTelemetryDrawer';
 import { ObservabilitySpan } from '../types';
@@ -150,10 +156,10 @@ export function DevSecOpsGatekeeperPage({ onBack }: DevSecOpsGatekeeperPageProps
   }, [startLabTour]);
 
   const enabledClauseCount = useMemo(
-    () => Object.values(state.policy_clauses).filter(Boolean).length,
+    () => countEnabledClauses(state.policy_clauses),
     [state.policy_clauses]
   );
-  const allClausesHardened = enabledClauseCount === 4;
+  const allClausesHardened = areAllClausesHardened(state.policy_clauses);
 
   const handleReset = () => {
     const freshSid = createSessionId();
@@ -258,50 +264,17 @@ export function DevSecOpsGatekeeperPage({ onBack }: DevSecOpsGatekeeperPageProps
     [state.policy_clauses]
   );
 
-  const globalStatusLabel = state.deployed_attested
-    ? 'Release Attested'
-    : allClausesHardened
-      ? 'Policy Hardened (4/4)'
-      : `Policy ${enabledClauseCount}/4`;
+  const globalStatusLabel = getGlobalStatusLabel(state.deployed_attested, state.policy_clauses);
 
-  const seats: RoleSeatItem<DevSecOpsSeatId>[] = useMemo(() => {
-    const devNeedsAction =
-      (allClausesHardened && !state.deployed_attested) ||
-      activeEval?.decision === 'DENY';
-
-    const appSecNeedsAction = !allClausesHardened;
-
-    return [
-      {
-        id: 'developer',
-        name: 'Jordan Lee',
-        roleLabel: 'Developer',
-        appLabel: 'Git Pull Requests & CI',
-        avatarInitials: 'JL',
-        badge: devNeedsAction
-          ? {
-              text: activeEval?.decision === 'DENY' ? 'Checks Failed' : 'Ready to Verify',
-              tone: activeEval?.decision === 'DENY' ? 'crimson' : 'blue',
-              pulse: true
-            }
-          : null
-      },
-      {
-        id: 'appsec-gate',
-        name: 'Sora Takahashi',
-        roleLabel: 'AppSec',
-        appLabel: 'Policy Gate & Release Approval',
-        avatarInitials: 'ST',
-        badge: appSecNeedsAction
-          ? {
-              text: `${enabledClauseCount}/4 Rules`,
-              tone: 'amber',
-              pulse: true
-            }
-          : null
-      }
-    ];
-  }, [allClausesHardened, state.deployed_attested, activeEval, enabledClauseCount]);
+  const seats: RoleSeatItem<DevSecOpsSeatId>[] = useMemo(
+    () =>
+      buildDevSecOpsSeats({
+        clauses: state.policy_clauses,
+        deployedAttested: state.deployed_attested,
+        activeEval
+      }),
+    [state.policy_clauses, state.deployed_attested, activeEval]
+  );
 
   const decodedProofSections: XRayDecodedProofSection[] = useMemo(() => {
     const evalData = activeEval ?? state.last_evaluation;
