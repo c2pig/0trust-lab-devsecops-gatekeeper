@@ -349,4 +349,62 @@ describe('Lab 4 (DevSecOps Gatekeeper) Cloud Run Adapter — Security & API Inva
     assert.equal(stored.evaluations_count, 2);
     assert.equal(stored.last_decision, 'ALLOW');
   });
+
+  it('returns 413 PAYLOAD_TOO_LARGE for >64KB JSON bodies', async () => {
+    const kv = new MemoryKvAdapter({ labSlug: 'devsecops-gatekeeper' });
+    const app = createCloudRunApp({
+      env: { ENVIRONMENT: 'development', LAB_SLUG: 'devsecops-gatekeeper' },
+      kv
+    });
+
+    const oversized = JSON.stringify({
+      pr_preset: 'CLEAN_PR',
+      policy_clauses: ALL_CLAUSES_ENABLED,
+      padding: 'x'.repeat(65 * 1024)
+    });
+
+    const res = await app.request(
+      'http://127.0.0.1:8080/api/devsecops-gatekeeper/evaluate-pr',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Session-Id': 'lab4-oversized' },
+        body: oversized
+      }
+    );
+    assert.equal(res.status, 413);
+    const data = (await res.json()) as { error: string };
+    assert.equal(data.error, 'PAYLOAD_TOO_LARGE');
+  });
+
+  it('returns 400 fail-closed for malformed JSON and missing pr_preset', async () => {
+    const kv = new MemoryKvAdapter({ labSlug: 'devsecops-gatekeeper' });
+    const app = createCloudRunApp({
+      env: { ENVIRONMENT: 'development', LAB_SLUG: 'devsecops-gatekeeper' },
+      kv
+    });
+
+    const badJsonRes = await app.request(
+      'http://127.0.0.1:8080/api/devsecops-gatekeeper/evaluate-pr',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Session-Id': 'lab4-bad-json' },
+        body: '{not-valid-json'
+      }
+    );
+    assert.equal(badJsonRes.status, 400);
+    const badJsonData = (await badJsonRes.json()) as { error: string };
+    assert.equal(badJsonData.error, 'INVALID_JSON');
+
+    const missingPresetRes = await app.request(
+      'http://127.0.0.1:8080/api/devsecops-gatekeeper/evaluate-pr',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Session-Id': 'lab4-missing-preset' },
+        body: JSON.stringify({ policy_clauses: ALL_CLAUSES_ENABLED })
+      }
+    );
+    assert.equal(missingPresetRes.status, 400);
+    const missingPresetData = (await missingPresetRes.json()) as { error: string };
+    assert.equal(missingPresetData.error, 'INVALID_PR_PRESET');
+  });
 });

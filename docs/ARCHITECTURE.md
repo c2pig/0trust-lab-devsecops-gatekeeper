@@ -48,3 +48,7 @@ flowchart LR
 - **Bounded Fallback & CI/CD Gates**: Unit-test / unbound-KV fallback map in `functions/api/devsecops-gatekeeper/evaluate-pr.ts` is bounded (`MAX_EPHEMERAL_ENTRIES = 256`) with `1h` TTL eviction and is never written when `STATE_KV` is bound. `.github/workflows/ci.yml` gates PRs (`tsc --noEmit`, `tsc -p tsconfig.server.json --noEmit`, `npm test`, `npm run build`), and `.github/workflows/deploy.yml` gates both `deploy-pages` and `deploy-cloudrun` behind `needs: test-and-build`.
 
 - **X-Ray Telemetry Drawer Theme**: Uses Chrome DevTools Light Mode palette (`#ffffff` / `#f1f3f4` surfaces, `#dadce0` borders, `#202124` / `#5f6368` text, `#1a73e8` active indicators) for high-contrast readability.
+- **3-Layer Unit Testing (`tests/`)**:
+  - **Layer 1 (`tests/server.test.ts`)**: Cloud Run adapter security & API invariants (`X-Lab-Router-Secret`, `/healthz`, TTL expiry, `X-Forwarded-Host`, JWT/secret redaction, `413 PAYLOAD_TOO_LARGE`, `400 INVALID_JSON` / `INVALID_PR_PRESET`).
+  - **Layer 2 (`tests/api.test.ts`)**: Edge function handler (`functions/api/devsecops-gatekeeper/evaluate-pr.ts`) tested with `MemoryKvAdapter` for 4-clause OPA/Rego truth table, edge fallback parity with `evaluatePrLocally`, fail-closed `413`/`400` validation, and per-session KV isolation.
+  - **Layer 3 (`tests/engine.test.ts`, `tests/selectors.test.ts`)**: Pure engine (`src/engine/devsecopsEngine.ts`) and DOM-free UI selectors (`src/engine/devsecopsSelectors.ts`) tested with `tsx --test` (`node:test`).
